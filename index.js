@@ -1,15 +1,53 @@
 // URL to get all the products list
 const baseUrl = "https://dummyjson.com/products";
+const categoryUrl = "https://dummyjson.com/products/category-list"; // URL to get category list
 
-// Default values for pagination
+// Default values for pagination and sorting
 let currentPage = 1;
 const limit = 10;
+let currentSearchQuery = ""; // Store the current search query
+let currentSortBy = "title"; // Default sort by title
+let currentSortOrder = "asc"; // Default sort order
+let currentCategory = ""; // Store the currently selected category
 
-// Function to get products with pagination support
-async function getProducts(page = 1, limit = 10) {
-  // Calculate the skip value for the API (products to skip based on current page)
+// Function to get categories
+async function fetchCategories() {
+  try {
+    const response = await fetch(categoryUrl);
+    const data = await response.json();
+    console.log("data:", data);
+    populateCategoryDropdown(data);
+  } catch (error) {
+    console.error("Failed to fetch categories:", error);
+  }
+}
+
+// Function to populate the category dropdown
+function populateCategoryDropdown(categories) {
+  const categorySelect = document.getElementById("category-select");
+  categories.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category; // Use the category name as the value
+    option.textContent = category.charAt(0).toUpperCase() + category.slice(1); // Capitalize first letter
+    categorySelect.appendChild(option);
+  });
+}
+
+// Function to get products with pagination support or search
+async function getProducts(
+  page = 1,
+  limit = 10,
+  searchValue = "",
+  sortBy = "title",
+  order = "asc",
+  category = ""
+) {
   const skip = (page - 1) * limit;
-  const url = `${baseUrl}?limit=${limit}&skip=${skip}`;
+  const url = category
+    ? `${baseUrl}/category/${category}?limit=${limit}&skip=${skip}`
+    : searchValue
+    ? `${baseUrl}/search?q=${searchValue}&limit=${limit}&skip=${skip}&sortBy=${sortBy}&order=${order}`
+    : `${baseUrl}?limit=${limit}&skip=${skip}&sortBy=${sortBy}&order=${order}`;
 
   try {
     const response = await fetch(url);
@@ -24,165 +62,190 @@ async function getProducts(page = 1, limit = 10) {
   }
 }
 
-// Function to display products for a specific page
-async function showProducts(page, limit) {
-  const data = await getProducts(page, limit);
-  console.log("data:", data);
+// Function to display products for a specific page, with optional search query, sorting, and category
+async function showProducts(page, limit, searchValue = "") {
+  const data = await getProducts(
+    page,
+    limit,
+    searchValue,
+    currentSortBy,
+    currentSortOrder,
+    currentCategory
+  );
+  const productList = document.querySelector("#product-list");
 
-  // Get the container where you want to display products
-  const mainContainer = document.querySelector("#main-container");
+  productList.innerHTML = "";
 
-  // Empty the container before displaying new products
-  mainContainer.innerHTML = "";
+  if (data && data.products.length > 0) {
+    const productCardContainer = document.createElement("div");
+    productCardContainer.classList.add("product-card-container");
 
-  const productCardContainer = document.createElement("div");
-  productCardContainer.classList.add("product-card-container");
+    data.products.forEach((product) => {
+      const productCard = document.createElement("div");
+      productCard.classList.add("product-card");
 
-  // Loop through each product and create elements
-  data.products.forEach((product) => {
-    // Create product card elements
-    const productCard = document.createElement("div");
-    productCard.classList.add("product-card");
+      const productImageContainer = document.createElement("div");
+      productImageContainer.classList.add("product-image-container");
 
-    // Create product image container
-    const productImageContainer = document.createElement("div");
-    productImageContainer.classList.add("product-image-container");
+      const productImage = document.createElement("img");
+      productImage.src = product.images[0];
+      productImage.classList.add("product-image");
 
-    const productImage = document.createElement("img");
-    productImage.src = product.images[0];
-    productImage.classList.add("product-image");
+      productImageContainer.appendChild(productImage);
 
-    productImageContainer.appendChild(productImage);
+      const productDetailsContainer = document.createElement("div");
+      productDetailsContainer.classList.add("product-details-container");
 
-    // Create product details container
-    const productDetailsContainer = document.createElement("div");
-    productDetailsContainer.classList.add("product-details-container");
+      const productTitle = document.createElement("p");
+      productTitle.classList.add("product-title");
+      productTitle.textContent = product.title;
 
-    // Create product title element
-    const productTitle = document.createElement("p");
-    productTitle.classList.add("product-title");
-    productTitle.textContent = product.title;
+      const productPrice = document.createElement("p");
+      productPrice.classList.add("product-price");
+      productPrice.textContent = `Price: $${product.price}`;
 
-    // Create product price element
-    const productPrice = document.createElement("p");
-    productPrice.classList.add("product-price");
-    productPrice.textContent = `Price: $${product.price}`;
+      const productRating = generateStars(product.rating);
 
-    // Product rating (with dynamic stars)
-    const productRating = generateStars(product.rating); // Generate stars based on rating
+      const productDescription = document.createElement("p");
+      productDescription.classList.add("product-description");
+      productDescription.textContent = product.description;
 
-    // Create product description element
-    const productDescription = document.createElement("p");
-    productDescription.classList.add("product-description");
-    productDescription.textContent = product.description;
+      const readMoreButton = document.createElement("button");
+      readMoreButton.textContent = "Read More";
+      readMoreButton.classList.add("read-more-btn");
 
-    // Initially, show only 2 lines of description (CSS handles this)
-    const readMoreButton = document.createElement("button");
-    readMoreButton.textContent = "Read More";
-    readMoreButton.classList.add("read-more-btn");
+      readMoreButton.addEventListener("click", () => {
+        if (productDescription.classList.contains("expanded")) {
+          productDescription.classList.remove("expanded");
+          readMoreButton.textContent = "Read More";
+        } else {
+          productDescription.classList.add("expanded");
+          readMoreButton.textContent = "Show Less";
+        }
+      });
 
-    // Add the "Read More" functionality
-    readMoreButton.addEventListener("click", () => {
-      if (productDescription.classList.contains("expanded")) {
-        productDescription.classList.remove("expanded");
-        readMoreButton.textContent = "Read More";
-      } else {
-        productDescription.classList.add("expanded");
-        readMoreButton.textContent = "Show Less";
-      }
+      productDetailsContainer.append(
+        productTitle,
+        productPrice,
+        productRating,
+        productDescription,
+        readMoreButton
+      );
+
+      productCard.append(productImageContainer, productDetailsContainer);
+      productCardContainer.appendChild(productCard);
     });
 
-    // Append elements to the product details container
-    productDetailsContainer.append(
-      productTitle,
-      productPrice,
-      productRating,
-      productDescription,
-      readMoreButton
-    );
+    productList.appendChild(productCardContainer);
 
-    // Append image and details containers to the product card
-    productCard.append(productImageContainer, productDetailsContainer);
-
-    // Append the product card to the main product card container
-    productCardContainer.appendChild(productCard);
-  });
-
-  // Append the product card container to the main container
-  mainContainer.appendChild(productCardContainer);
-
-  // Update pagination controls
-  updatePaginationControls(data.total, page, limit);
+    // Update pagination controls
+    updatePaginationControls(data.total, page, limit, searchValue);
+  } else {
+    displayNoProductsFound();
+  }
 }
 
-// Function to update pagination buttons
-function updatePaginationControls(totalItems, currentPage, limit) {
+// Function to update pagination controls
+function updatePaginationControls(
+  totalItems,
+  currentPage,
+  limit,
+  searchValue = ""
+) {
   const totalPages = Math.ceil(totalItems / limit);
-  console.log("totalPages:", totalPages);
-
-  // Get the pagination container
   const paginationContainer = document.querySelector("#pagination-container");
-
-  // Clear the previous buttons
+  paginationContainer.style.display = "flex";
   paginationContainer.innerHTML = "";
 
-  // Create "Previous" button
   const prevButton = document.createElement("button");
   prevButton.textContent = "Previous";
-  prevButton.disabled = currentPage === 1; // Disable if on the first page
+  prevButton.disabled = currentPage === 1;
   prevButton.addEventListener("click", () => {
     if (currentPage > 1) {
       currentPage--;
-      showProducts(currentPage, limit);
+      showProducts(currentPage, limit, searchValue);
     }
   });
 
-  // Create "Next" button
   const nextButton = document.createElement("button");
   nextButton.textContent = "Next";
-  nextButton.disabled = currentPage === totalPages; // Disable if on the last page
+  nextButton.disabled = currentPage === totalPages;
   nextButton.addEventListener("click", () => {
     if (currentPage < totalPages) {
       currentPage++;
-      showProducts(currentPage, limit);
+      showProducts(currentPage, limit, searchValue);
     }
   });
 
-  // Append buttons to the pagination container
   paginationContainer.append(prevButton, nextButton);
+}
+
+// Function to handle "no products found"
+function displayNoProductsFound() {
+  const productList = document.querySelector("#product-list");
+  productList.innerHTML =
+    "<p>No products found. Please try a different search.</p>";
 }
 
 // Display products for the first page with a limit of 10
 showProducts(currentPage, limit);
 
-// Function to generate stars based on rating with decimals
+// Fetch categories and populate the dropdown on page load
+fetchCategories();
+
+// Search form event listener
+document.querySelector(".search-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const searchInput = document.querySelector("#search-input");
+  const searchValue = searchInput.value.trim();
+  if (searchValue) {
+    currentPage = 1;
+    currentSearchQuery = searchValue;
+    showProducts(currentPage, limit, currentSearchQuery);
+  }
+});
+
+// Home button listener
+document.querySelector(".home").addEventListener("click", () => {
+  window.location.reload();
+});
+
+// Sorting dropdown event listener
+const sortSelect = document.getElementById("sort-select");
+sortSelect.addEventListener("change", (e) => {
+  const [sortBy, order] = e.target.value.split("_");
+  currentSortBy = sortBy;
+  currentSortOrder = order;
+  currentPage = 1; // Reset to first page on sort change
+  showProducts(currentPage, limit, currentSearchQuery);
+});
+
+// Category dropdown event listener
+const categorySelect = document.getElementById("category-select");
+categorySelect.addEventListener("change", (e) => {
+  currentCategory = e.target.value; // Set the current category
+  currentPage = 1; // Reset to first page on category change
+  showProducts(currentPage, limit, currentSearchQuery);
+});
+
+// Function to generate stars based on rating
 function generateStars(rating) {
   const starContainer = document.createElement("div");
   starContainer.classList.add("star-container");
 
-  // Tooltip element to show the exact rating
-  const tooltip = document.createElement("span");
-  tooltip.classList.add("tooltip");
-  tooltip.textContent = `Rating: ${rating.toFixed(1)}`; // Show rating with 1 decimal precision
-  starContainer.appendChild(tooltip);
+  const fullStars = Math.floor(rating);
+  const decimalPart = rating % 1;
 
-  // Full stars
-  const fullStars = Math.floor(rating); // Get integer part (e.g., 4 from 4.7)
-  const decimalPart = rating % 1; // Get decimal part (e.g., 0.7 from 4.7)
-
-  // Add 5 stars (either full or empty)
   for (let i = 1; i <= 5; i++) {
     const star = document.createElement("span");
     star.classList.add("star");
-    star.textContent = "★"; // Use star character
+    star.textContent = "★";
 
     if (i <= fullStars) {
-      // Full stars
       star.classList.add("full");
     } else if (i === fullStars + 1 && decimalPart > 0) {
-      // Partially filled star for the decimal part
       star.classList.add("partial");
-      const fillPercentage = decimalPart * 100; // Convert decimal to percentage (e.g., 0.7 -> 70%)
+      const fillPercentage = decimalPart * 100;
       star.style.setProperty("--fill-percent", `${fillPercentage}%`);
     }
 

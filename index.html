@@ -5,15 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Product Listing with Pagination</title>
     <link rel="stylesheet" href="./index.css" />
-    <script
-      src="https://kit.fontawesome.com/f21d11ed87.js"
-      crossorigin="anonymous"
-    ></script>
   </head>
+
   <body>
     <!-- Header -->
     <header class="header">
-      <p>Product Listing Page</p>
+      <h4 class="home">Home</h4>
+      <p>Dynamic Product Listing Page</p>
       <div>
         <form class="search-form">
           <input
@@ -23,7 +21,7 @@
             class="search"
           />
           <button type="submit" class="search-icon">
-            <?xml version="1.0" ?><svg
+            <svg
               class="feather feather-search"
               fill="none"
               height="24"
@@ -38,17 +36,44 @@
               <circle cx="11" cy="11" r="8" />
               <line x1="21" x2="16.65" y1="21" y2="16.65" />
             </svg>
-          </butt>
+          </button>
         </form>
       </div>
     </header>
-    <!-- Main container -->
-    <main>
-      <div id="main-container"></div>
 
-      <!-- Pagination buttons will go here -->
-      <div id="pagination-container"></div>
+    <!-- Main container -->
+    <main id="main-container">
+      <!-- Sidebar for product options -->
+      <aside class="product-options-container">
+        <div class="product-options">
+          <p>Filter Options</p>
+
+          <!-- Sorting dropdown -->
+          <label for="sort-select">Sort by:</label>
+          <select id="sort-select">
+            <option value="title_asc">Title: A-Z</option>
+            <option value="title_desc">Title: Z-A</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="rating_asc">Rating: Low to High</option>
+            <option value="rating_desc">Rating: High to Low</option>
+          </select>
+
+          <!-- Category dropdown -->
+          <label for="category-select">Category:</label>
+          <select id="category-select">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+      </aside>
+
+      <!-- Product listing and pagination -->
+      <div id="product-container">
+        <div id="product-list"></div>
+        <div id="pagination-container"></div>
+      </div>
     </main>
+
+    <script src="index.js"></script>
   </body>
 </html>
-<script src="index.js"></script>

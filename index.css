@@ -12,36 +12,73 @@
   background-color: rgb(46, 38, 38);
   color: white;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
-  font-size: 2rem;
+  padding: 0 20px;
+  font-size: 1.5rem;
   position: sticky;
   top: 0;
   z-index: 10; /* Ensures the header stays on top */
 }
 
+.home {
+  cursor: pointer;
+}
+
+.search-form {
+  display: flex;
+  position: relative;
+}
+
+.search {
+  padding: 0.6rem 0.8rem;
+  width: 20rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 0.25rem;
+  outline: none;
+}
+
+.search-icon {
+  cursor: pointer;
+  width: 2.5rem;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 0 0.25rem 0.25rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(254, 199, 111);
+  color: black;
+  border: none;
+}
+
 /* Main container */
-#main-container {
-  width: 100%;
-  min-height: 100vh;
-  padding: 20px;
+main {
+  display: flex;
+}
+#product-container {
+  border: 2px solid red;
+  width: 83vw;
+  margin-left: 17vw;
+  padding: 1rem;
 }
 
 /* Product card container grid */
 .product-card-container {
-  width: 100%;
+  border: 1px solid red;
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(250px, 1fr)
-  ); /* Responsive grid */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
-  margin-bottom: 20px; /* Add margin to avoid overlap with pagination */
+  width: 100%;
+  justify-items: stretch; /* Make items stretch to fill the available space */
 }
 
 /* Product card styling */
 .product-card {
-  max-width: 300px;
+  max-width: 320px;
   border-radius: 10px;
   padding: 10px;
   background-color: #fff;
@@ -55,7 +92,7 @@
 /* Product image container */
 .product-image-container {
   width: 100%;
-  height: 200px; /* Consistent height for all images */
+  height: 200px;
   border-radius: 8px;
   overflow: hidden;
 }
@@ -92,19 +129,18 @@
 /* Star styling */
 .star-container {
   display: inline-block;
-  position: relative; /* For tooltip positioning */
-  cursor: pointer;
+  position: relative;
 }
 
 .star {
   font-size: 20px;
-  color: lightgray; /* Empty star color */
+  color: lightgray;
   display: inline-block;
-  transition: color 0.3s ease; /* Smooth transition when changing color */
+  transition: color 0.3s ease;
 }
 
 .star.full {
-  color: gold; /* Full star color */
+  color: gold;
 }
 
 .star.partial {
@@ -121,17 +157,17 @@
 
 /* Tooltip styling */
 .star-container .tooltip {
-  visibility: hidden; /* Hidden by default */
+  visibility: hidden;
   background-color: black;
   color: white;
   text-align: center;
   border-radius: 5px;
   padding: 5px;
   position: absolute;
-  bottom: 100%; /* Display above the stars */
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  white-space: nowrap; /* Prevent text from wrapping */
+  white-space: nowrap;
   z-index: 10;
   font-size: 0.8rem;
   opacity: 0;
@@ -143,13 +179,13 @@
   opacity: 1;
 }
 
-/* Product description (initial 2 lines only) */
+/* Product description */
 .product-description {
   overflow: hidden;
-  line-clamp: 2; /* Show only 2 lines */
+  line-clamp: 2;
   line-height: 1.5em;
-  height: 3em; /* 2 lines of 1.5em each */
-  transition: height 0.3s ease; /* Smooth transition */
+  height: 3em;
+  transition: height 0.3s ease;
 }
 
 .product-description.expanded {
@@ -176,10 +212,8 @@
   display: flex;
   justify-content: center;
   margin-top: 20px;
-  position: sticky;
-  bottom: 0;
   background-color: white;
-  z-index: 10; /* Ensures pagination stays above content */
+  margin-bottom: 2rem;
 }
 
 #pagination-container button {
@@ -203,41 +237,105 @@
   cursor: not-allowed;
 }
 
+/* No data message styling */
+.no-data-message-card {
+  background-color: #f9f9f9;
+  border: 2px solid #e1e1e1;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  margin: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.no-data-message-text {
+  font-size: 24px;
+  color: #333;
+}
+
+.go-to-main-btn {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 2rem;
+}
+
+.go-to-main-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Sidebar styling */
+.product-options-container {
+  border: 1px solid blue;
+  width: 17vw;
+  height: calc(100vh - 60px); /* Subtracting the height of the header */
+  /* border-right: 1px solid #ddd; */
+  box-sizing: border-box;
+  position: fixed;
+  left: 0;
+  top: 60px; /* Start the sidebar below the header */
+  background-color: white;
+  overflow-y: auto; /* Allows scrolling if the content exceeds available space */
+}
+
+/* .product-options {
+  font-size: 1rem;
+} */
+
 /* Media Query for smaller devices */
 @media (max-width: 768px) {
   .product-card-container {
-    grid-template-columns: repeat(
-      auto-fit,
-      minmax(200px, 1fr)
-    ); /* Adjust grid for smaller screens */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .header {
+    justify-content: space-between;
+  }
+
+  .header p {
+    display: none;
+  }
+
+  /* Hide sidebar on screens smaller than 768px */
+  .product-options-container {
+    display: none;
+  }
+
+  /* Make the product container take full width when the sidebar is hidden */
+  #product-container {
+    width: 100vw; /* Full width without the sidebar */
+    margin-left: 0; /* Remove the margin that accounted for the sidebar */
   }
 }
 
-/* Styles for search */
-.search-form {
-  display: flex;
-  position: relative;
+/* Further adjust layout for very small screens */
+@media (min-width: 300px) and (max-width: 460px) {
+  .search-form .search {
+    width: 12rem;
+  }
+
+  .product-options-container {
+    display: none;
+  }
+
+  #product-container {
+    width: 100vw;
+    margin-left: 0;
+  }
 }
-.search {
+
+.sort-options {
+  margin: 10px 0;
+}
+
+.sort-select {
   padding: 0.6rem 0.8rem;
-  width: 22rem;
   font-size: 0.9rem;
-  border: none;
+  border: 1px solid #ccc;
   border-radius: 0.25rem;
   outline: none;
-}
-.search-icon {
-  cursor: pointer;
-  width: 2.5rem;
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  border-radius: 0 0.25rem 0.25rem 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgb(254, 199, 111);
-  color: black;
-  border: none;
+  width: 100%;
 }
